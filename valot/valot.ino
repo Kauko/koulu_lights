@@ -145,9 +145,18 @@ void flipMode() {
   modeSelect++;
   //dont go over MAX_MODES -1 and wrap back to 0 for value of modeSelect
   modeSelect = modeSelect % MAX_MODES;
+
+  //fadeAllToColor(CRGB::Black);
 }
 
-void allToColor(color, showIndividual) {
+void fadeAllToColor(CRGB color) {
+  targetPalette=color;
+  nblendPaletteTowardPalette(currentPalette, targetPalette, NUM_LEDS);
+  LEDS.show();
+  delay(5);
+}
+
+void allToColor(CRGB color, boolean showIndividual) {
   for (int i = 0; i < NUM_LEDS; i++){
     leds[i]=color;
     if(showIndividual) {

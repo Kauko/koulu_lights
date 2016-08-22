@@ -36,17 +36,17 @@
 
 #define LED_PIN     4
 //#define CLK_PIN     11
-#define BRIGHTNESS  100
+#define BRIGHTNESS  230
 #define LED_TYPE    WS2812      // Only use the LED_PIN for WS2812's
 #define COLOR_ORDER GRB
 
 #define NUM_LEDS 150
-#define MAX_MODES 3 // with 4, the modulo will get values of 0, 1, 2, and 3 // https://www.google.com/search?q=0+%25+4&oq=0+%25+4
+#define MAX_MODES 4 // with 4, the modulo will get values of 0, 1, 2, and 3 // https://www.google.com/search?q=0+%25+4&oq=0+%25+4
 
 struct CRGB leds[NUM_LEDS];
 
 static uint16_t dist;         // A random number for our noise generator.
-uint16_t scale = 25;          // Wouldn't recommend changing this on the fly, or the animation will be really blocky. ORIGINAALI 30
+uint16_t scale = 10;          // Wouldn't recommend changing this on the fly, or the animation will be really blocky. ORIGINAALI 30
 uint8_t maxChanges = 3;      // Value for blending between palettes. ORIGINAALI 15
 
 CRGBPalette16 currentPalette(CRGB::Black);

@@ -41,7 +41,7 @@
 #define COLOR_ORDER GRB
 
 #define NUM_LEDS 150
-#define MAX_MODES 4 // with 4, the modulo will get values of 0, 1, 2, and 3 // https://www.google.com/search?q=0+%25+4&oq=0+%25+4
+#define MAX_MODES 2 // with 4, the modulo will get values of 0, 1, 2, and 3 // https://www.google.com/search?q=0+%25+4&oq=0+%25+4
 
 struct CRGB leds[NUM_LEDS];
 
@@ -52,7 +52,7 @@ uint8_t maxChanges = 3;      // Value for blending between palettes. ORIGINAALI 
 CRGBPalette16 currentPalette(CRGB::Black);
 CRGBPalette16 targetPalette(OceanColors_p);
 
-uint8_t modeSelect = 1;
+uint8_t modeSelect = 0;
 const byte interruptPin = 2; // CHANGE to interruptable pin
 
 void setup() {
@@ -68,12 +68,30 @@ void setup() {
   LEDS.setBrightness(BRIGHTNESS);
 
   dist = random16(12345);          // A semi-random number for our noise generator
+  allToColor(CRGB::Red, false);
+  delay(300);
+  allToColor(CRGB::Yellow, false);
+  delay(300);
+  allToColor(CRGB::Green, false);
+  delay(300);
+  allToColor(CRGB::Black, true);
+  delay(500);
 } // setup()
 
 //Instead of having just one loop, we make optional "main loops" that can be selected.
 void loop() {
 
-while(modeSelect == 0) {
+  switch(modeSelect) {
+    case 0:
+      fadingPalette();
+      break;
+    case 1:
+      stepToGreen();
+      break;
+  }
+} // loop()
+
+void fadingPalette() {
 //New loop for mode 1
   EVERY_N_MILLISECONDS(20) {
     nblendPaletteTowardPalette(currentPalette, targetPalette, maxChanges);  // Blend towards the target palette
@@ -85,47 +103,16 @@ while(modeSelect == 0) {
   }
   LEDS.show();
   // Display the LED's at every loop cycle.
-}//while
-
-while(modeSelect == 1) {
-//New loop for mode 2
-// EDIT VALUES TO HAVE DIFFERENT MODE
-EVERY_N_MILLISECONDS(20) {
-  nblendPaletteTowardPalette(currentPalette, targetPalette, maxChanges);  // Blend towards the target palette
-  fillnoise8();                                                           // Update the LED array with noise at the new location
 }
 
-EVERY_N_SECONDS(2) {             // Change the target palette to a random one every XX seconds.
-  targetPalette = CRGBPalette16(CHSV(random8(), 255, random8(128,255)), CHSV(random8(), 255, random8(128,255)), CHSV(random8(), 192, random8(128,255)), CHSV(random8(), 255, random8(128,255)));
-}
-LEDS.show();
-// Display the LED's at every loop cycle.
-}//while mode 2
-
-while(modeSelect == 2) {
-//New loop for mode 2
-//EDIT VALUES TO HAVE A DIFFERENT MODE
-//You can also run a different animation in this loop if you set one up...
-
-EVERY_N_MILLISECONDS(20) {
-  nblendPaletteTowardPalette(currentPalette, targetPalette, maxChanges);  // Blend towards the target palette
-  fillnoise8();                                                           // Update the LED array with noise at the new location
-}
-
-EVERY_N_SECONDS(2) {             // Change the target palette to a random one every XX seconds.
-  targetPalette = CRGBPalette16(CHSV(random8(), 255, random8(128,255)), CHSV(random8(), 255, random8(128,255)), CHSV(random8(), 192, random8(128,255)), CHSV(random8(), 255, random8(128,255)));
-}
-LEDS.show();
-// Display the LED's at every loop cycle.
-}//while mode 3
-
-
-//REMEMBER to increase MAX_MODES to enable more modes
-while(modeSelect == 3) {
+void stepToBlack() {
   allToColor(CRGB::Black, true);
-}//while mode 3
+}
 
-} // loop()
+
+void stepToGreen() {
+  allToColor(CRGB::Green, true);
+}
 
 
 void fillnoise8() {
@@ -149,19 +136,19 @@ void flipMode() {
   //fadeAllToColor(CRGB::Black);
 }
 
-void fadeAllToColor(CRGB color) {
+/*void fadeAllToColor(CRGB color) {
   targetPalette=color;
   nblendPaletteTowardPalette(currentPalette, targetPalette, NUM_LEDS);
   LEDS.show();
   delay(5);
-}
+}*/
 
 void allToColor(CRGB color, boolean showIndividual) {
   for (int i = 0; i < NUM_LEDS; i++){
     leds[i]=color;
     if(showIndividual) {
-      delay(30); 
       LEDS.show();
+      delay(30);
       }
   }
   if (!showIndividual) { 

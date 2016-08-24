@@ -41,7 +41,7 @@
 #define COLOR_ORDER GRB
 
 #define NUM_LEDS 225
-#define MAX_MODES 2 // with 4, the modulo will get values of 0, 1, 2, and 3 // https://www.google.com/search?q=0+%25+4&oq=0+%25+4
+#define MAX_MODES 3 // with 4, the modulo will get values of 0, 1, 2, and 3 // https://www.google.com/search?q=0+%25+4&oq=0+%25+4
 
 struct CRGB leds[NUM_LEDS];
 
@@ -52,7 +52,7 @@ uint8_t maxChanges = 3;      // Value for blending between palettes. ORIGINAALI 
 CRGBPalette16 currentPalette(OceanColors_p);
 CRGBPalette16 targetPalette(OceanColors_p);
 
-uint8_t modeSelect = 1;
+uint8_t modeSelect = 0;
 const byte interruptPin = 2; // CHANGE to interruptable pin
 
 unsigned long modeChangeTime = 0;
@@ -93,8 +93,11 @@ void loop() {
     case 1:
       if(!maybeFlashColor(currentTime, CRGB::Pink)){
         singleColorPulse(currentTime);
-
-        //allToColor(CRGB::Green);
+      }
+      break;
+    case 2:
+      if(!maybeFlashColor(currentTime, CRGB::Green)){
+        rainbowPulse(currentTime);
       }
       break;
   }
@@ -130,20 +133,66 @@ void singleColorPulse(unsigned long curr) {
   
   if (curr - previousSingleColorPulse > UPDATE_DELAY) {
 
-    leds[previousSingleColorIndex - 5] = CRGB::Black;
-    leds[previousSingleColorIndex - 4] = CHSV(singleColorPulseHue, singleColorPulseSaturation, 45);
-    leds[previousSingleColorIndex - 3] = CHSV(singleColorPulseHue, singleColorPulseSaturation, 85);
-    leds[previousSingleColorIndex - 2] = CHSV(singleColorPulseHue, singleColorPulseSaturation, 155);
-    leds[previousSingleColorIndex - 1] = CHSV(singleColorPulseHue, singleColorPulseSaturation, 235);
-    leds[previousSingleColorIndex] = CHSV(singleColorPulseHue, singleColorPulseSaturation, 255);
-    leds[previousSingleColorIndex + 1] = CHSV(singleColorPulseHue, singleColorPulseSaturation, 235);
+    leds[previousSingleColorIndex - 8] = CRGB::Black;
+    leds[previousSingleColorIndex - 7] = CHSV(singleColorPulseHue, singleColorPulseSaturation, 15);
+    leds[previousSingleColorIndex - 6] = CHSV(singleColorPulseHue, singleColorPulseSaturation, 45);
+    leds[previousSingleColorIndex - 5] = CHSV(singleColorPulseHue, singleColorPulseSaturation, 95);
+    leds[previousSingleColorIndex - 4] = CHSV(singleColorPulseHue, singleColorPulseSaturation, 155);
+    leds[previousSingleColorIndex - 3] = CHSV(singleColorPulseHue, singleColorPulseSaturation, 205);
+    
+    leds[previousSingleColorIndex - 2] = CHSV(singleColorPulseHue, singleColorPulseSaturation, 255);
+    leds[previousSingleColorIndex - 1] = CHSV(singleColorPulseHue, singleColorPulseSaturation, 255);
+    leds[previousSingleColorIndex + 0] = CHSV(singleColorPulseHue, singleColorPulseSaturation, 255);
+    leds[previousSingleColorIndex + 1] = CHSV(singleColorPulseHue, singleColorPulseSaturation, 255);
     leds[previousSingleColorIndex + 2] = CHSV(singleColorPulseHue, singleColorPulseSaturation, 255);
-    leds[previousSingleColorIndex + 3] = CHSV(singleColorPulseHue, singleColorPulseSaturation, 85);
-    leds[previousSingleColorIndex + 4] = CHSV(singleColorPulseHue, singleColorPulseSaturation, 45);
+    
+    leds[previousSingleColorIndex + 3] = CHSV(singleColorPulseHue, singleColorPulseSaturation, 205);
+    leds[previousSingleColorIndex + 4] = CHSV(singleColorPulseHue, singleColorPulseSaturation, 155);
+    leds[previousSingleColorIndex + 5] = CHSV(singleColorPulseHue, singleColorPulseSaturation, 95);
+    leds[previousSingleColorIndex + 6] = CHSV(singleColorPulseHue, singleColorPulseSaturation, 45);
+    leds[previousSingleColorIndex + 7] = CHSV(singleColorPulseHue, singleColorPulseSaturation, 14);
 
     previousSingleColorPulse = curr;
     previousSingleColorIndex++;
-    previousSingleColorIndex = previousSingleColorIndex % (NUM_LEDS - 4);
+    previousSingleColorIndex = previousSingleColorIndex % (NUM_LEDS - 7);
+  }
+
+  LEDS.show();
+}
+
+unsigned long previousRainbowPulse = 0;
+int previousRainbowIndex = PULSE_START_INDEX;  
+
+void rainbowPulse(unsigned long curr) {
+  long UPDATE_DELAY = random8(20, 150);
+
+  int rainbowPulseHue = random8(255);
+  int rainbowPulseSaturation = random8(255);
+  
+  if (curr - previousRainbowPulse > UPDATE_DELAY) {
+
+    leds[previousRainbowIndex - 8] = CRGB::Black;
+    leds[previousRainbowIndex - 7] = CHSV(rainbowPulseHue, rainbowPulseSaturation, 15);
+    leds[previousRainbowIndex - 6] = CHSV(rainbowPulseHue, rainbowPulseSaturation, 45);
+    leds[previousRainbowIndex - 5] = CHSV(rainbowPulseHue, rainbowPulseSaturation, 95);
+    leds[previousRainbowIndex - 4] = CHSV(rainbowPulseHue, rainbowPulseSaturation, 155);
+    leds[previousRainbowIndex - 3] = CHSV(rainbowPulseHue, rainbowPulseSaturation, 205);
+    
+    leds[previousRainbowIndex - 2] = CHSV(rainbowPulseHue, rainbowPulseSaturation, 255);
+    leds[previousRainbowIndex - 1] = CHSV(rainbowPulseHue, rainbowPulseSaturation, 255);
+    leds[previousRainbowIndex + 0] = CHSV(rainbowPulseHue, rainbowPulseSaturation, 255);
+    leds[previousRainbowIndex + 1] = CHSV(rainbowPulseHue, rainbowPulseSaturation, 255);
+    leds[previousRainbowIndex + 2] = CHSV(rainbowPulseHue, rainbowPulseSaturation, 255);
+    
+    leds[previousRainbowIndex + 3] = CHSV(rainbowPulseHue, rainbowPulseSaturation, 205);
+    leds[previousRainbowIndex + 4] = CHSV(rainbowPulseHue, rainbowPulseSaturation, 155);
+    leds[previousRainbowIndex + 5] = CHSV(rainbowPulseHue, rainbowPulseSaturation, 95);
+    leds[previousRainbowIndex + 6] = CHSV(rainbowPulseHue, rainbowPulseSaturation, 45);
+    leds[previousRainbowIndex + 7] = CHSV(rainbowPulseHue, rainbowPulseSaturation, 14);
+
+    previousRainbowPulse = curr;
+    previousRainbowIndex++;
+    previousRainbowIndex = previousRainbowIndex % (NUM_LEDS - 4);
   }
 
   LEDS.show();

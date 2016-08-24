@@ -55,9 +55,11 @@ CRGBPalette16 targetPalette(OceanColors_p);
 uint8_t modeSelect = 0;
 const byte interruptPin = 2; // CHANGE to interruptable pin
 
+unsigned long modeChangeTime = 0;
+
 void setup() {
   Serial.begin(57600);
-  delay(5000); //Originaali 3000
+  delay(3000); // 5000
 
   pinMode(interruptPin, INPUT_PULLUP);
   attachInterrupt(digitalPinToInterrupt(interruptPin), flipMode, RISING);
@@ -68,27 +70,35 @@ void setup() {
   LEDS.setBrightness(BRIGHTNESS);
 
   dist = random16(12345);          // A semi-random number for our noise generator
-  allToColor(CRGB::Red, false);
+  allToColor(CRGB::Red);
   delay(300);
-  allToColor(CRGB::Yellow, false);
+  allToColor(CRGB::Yellow);
   delay(300);
-  allToColor(CRGB::Green, false);
+  allToColor(CRGB::Green);
+  delay(800);
+  allToColor(CRGB::Black);
   delay(300);
-  allToColor(CRGB::Black, true);
-  delay(500);
 } // setup()
 
-//Instead of having just one loop, we make optional "main loops" that can be selected.
 void loop() {
 
-  switch(modeSelect) {
+  unsigned long currentTime = millis();
+  maybeFlashColor(currentTime, CRGB::Pink);
+
+  /*switch(modeSelect) {
     case 0:
-      fadingPalette();
+      
+      if(!maybeFlashColor(currentTime, CRGB::Red)){
+        //fadingPalette();
+        allToColor(CRGB::Purple);  
+      }
       break;
     case 1:
-      stepToGreen();
+      if(!maybeFlashColor(currentTime, CRGB::Pink)){
+        allToColor(CRGB::Green);  
+      }
       break;
-  }
+  }*/
 } // loop()
 
 void fadingPalette() {
@@ -105,16 +115,6 @@ void fadingPalette() {
   // Display the LED's at every loop cycle.
 }
 
-void stepToBlack() {
-  allToColor(CRGB::Black, true);
-}
-
-
-void stepToGreen() {
-  allToColor(CRGB::Green, true);
-}
-
-
 void fillnoise8() {
   for(int i = 0; i < NUM_LEDS; i++) {                                      // Just ONE loop to fill up the LED array as all of the pixels change.
     uint8_t index = inoise8(i*scale, dist+i*scale) % 255;                  // Get a value from the noise function. I'm using both x and y axis.
@@ -125,7 +125,7 @@ void fillnoise8() {
 } // fillnoise8()
 
 void flipMode() {
-  //debounce button to avoid double, comment out next line if you do not want delay in animation. The delay is supposed to last about as long as a normal button press.
+  // Without debounce you have to be inhumanely fast to change the mode just once.
   while(digitalRead(interruptPin) == LOW) { delay(200); }
 
   //next mode
@@ -133,26 +133,49 @@ void flipMode() {
   //dont go over MAX_MODES -1 and wrap back to 0 for value of modeSelect
   modeSelect = modeSelect % MAX_MODES;
 
-  //fadeAllToColor(CRGB::Black);
+  modeChangeTime = millis();
 }
 
-/*void fadeAllToColor(CRGB color) {
-  targetPalette=color;
-  nblendPaletteTowardPalette(currentPalette, targetPalette, NUM_LEDS);
-  LEDS.show();
-  delay(5);
-}*/
-
-void allToColor(CRGB color, boolean showIndividual) {
+void allToColor(CRGB color) {
   for (int i = 0; i < NUM_LEDS; i++){
     leds[i]=color;
-    if(showIndividual) {
-      LEDS.show();
-      delay(30);
-      }
   }
-  if (!showIndividual) { 
-    LEDS.show(); 
-    }
+  LEDS.show();
+}
+
+void allToBlack(){
+  //LEDS.clear();
+
+  allToColor(CRGB::Black);
+}
+
+boolean isBetween(unsigned long minimi, unsigned long value, unsigned long maximum) {
+  if(minimi <= value && maximum > value) { return true; } else { return false; }
+}
+
+boolean maybeFlashColor(unsigned long currentTime, CRGB color) {
+  unsigned long diff = currentTime - modeChangeTime;
+  if(isBetween(0, diff, 1000)) {
+    allToColor(color);
+    return true;
+  } else if (isBetween(1000, diff, 1500)) {
+    allToBlack();
+    return true;
+  } else if (isBetween(1500, diff, 2000)) {
+    allToColor(color);
+    return true;
+  } else if (isBetween(2000, diff, 2500)) {
+    allToBlack();
+    return true;
+  } else if (isBetween(2500, diff, 3000)) {
+    allToColor(color);
+    return true;
+  } else if (isBetween(3000, diff, 3500)) {
+    allToBlack();
+    return true;
+  } else {
+    allToColor(CRGB::Green);
+    return false;
+  }
 }
 

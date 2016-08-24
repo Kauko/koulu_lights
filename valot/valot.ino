@@ -40,7 +40,7 @@
 #define LED_TYPE    WS2812      // Only use the LED_PIN for WS2812's
 #define COLOR_ORDER GRB
 
-#define NUM_LEDS 150
+#define NUM_LEDS 225
 #define MAX_MODES 2 // with 4, the modulo will get values of 0, 1, 2, and 3 // https://www.google.com/search?q=0+%25+4&oq=0+%25+4
 
 struct CRGB leds[NUM_LEDS];
@@ -49,10 +49,10 @@ static uint16_t dist;         // A random number for our noise generator.
 uint16_t scale = 10;          // Wouldn't recommend changing this on the fly, or the animation will be really blocky. ORIGINAALI 30
 uint8_t maxChanges = 3;      // Value for blending between palettes. ORIGINAALI 15
 
-CRGBPalette16 currentPalette(CRGB::Black);
+CRGBPalette16 currentPalette(OceanColors_p);
 CRGBPalette16 targetPalette(OceanColors_p);
 
-uint8_t modeSelect = 0;
+uint8_t modeSelect = 1;
 const byte interruptPin = 2; // CHANGE to interruptable pin
 
 unsigned long modeChangeTime = 0;
@@ -83,22 +83,21 @@ void setup() {
 void loop() {
 
   unsigned long currentTime = millis();
-  maybeFlashColor(currentTime, CRGB::Pink);
-
-  /*switch(modeSelect) {
-    case 0:
-      
+  
+  switch(modeSelect) {
+    case 0:   
       if(!maybeFlashColor(currentTime, CRGB::Red)){
-        //fadingPalette();
-        allToColor(CRGB::Purple);  
+        fadingPalette();  
       }
       break;
     case 1:
       if(!maybeFlashColor(currentTime, CRGB::Pink)){
-        allToColor(CRGB::Green);  
+        singleColorPulse(currentTime);
+
+        //allToColor(CRGB::Green);
       }
       break;
-  }*/
+  }
 } // loop()
 
 void fadingPalette() {
@@ -113,6 +112,41 @@ void fadingPalette() {
   }
   LEDS.show();
   // Display the LED's at every loop cycle.
+}
+
+unsigned long previousSingleColorPulse = 0;
+int PULSE_START_INDEX = 0;
+int previousSingleColorIndex = PULSE_START_INDEX;
+int singleColorPulseSaturation = 240;
+int singleColorPulseHue = 240;  
+
+void singleColorPulse(unsigned long curr) {
+  long UPDATE_DELAY = random8(20, 150);
+
+  if (PULSE_START_INDEX == previousSingleColorIndex) {
+    singleColorPulseHue = random8(255);
+    singleColorPulseSaturation = random8(255);
+  }
+  
+  if (curr - previousSingleColorPulse > UPDATE_DELAY) {
+
+    leds[previousSingleColorIndex - 5] = CRGB::Black;
+    leds[previousSingleColorIndex - 4] = CHSV(singleColorPulseHue, singleColorPulseSaturation, 45);
+    leds[previousSingleColorIndex - 3] = CHSV(singleColorPulseHue, singleColorPulseSaturation, 85);
+    leds[previousSingleColorIndex - 2] = CHSV(singleColorPulseHue, singleColorPulseSaturation, 155);
+    leds[previousSingleColorIndex - 1] = CHSV(singleColorPulseHue, singleColorPulseSaturation, 235);
+    leds[previousSingleColorIndex] = CHSV(singleColorPulseHue, singleColorPulseSaturation, 255);
+    leds[previousSingleColorIndex + 1] = CHSV(singleColorPulseHue, singleColorPulseSaturation, 235);
+    leds[previousSingleColorIndex + 2] = CHSV(singleColorPulseHue, singleColorPulseSaturation, 255);
+    leds[previousSingleColorIndex + 3] = CHSV(singleColorPulseHue, singleColorPulseSaturation, 85);
+    leds[previousSingleColorIndex + 4] = CHSV(singleColorPulseHue, singleColorPulseSaturation, 45);
+
+    previousSingleColorPulse = curr;
+    previousSingleColorIndex++;
+    previousSingleColorIndex = previousSingleColorIndex % (NUM_LEDS - 4);
+  }
+
+  LEDS.show();
 }
 
 void fillnoise8() {
@@ -174,7 +208,6 @@ boolean maybeFlashColor(unsigned long currentTime, CRGB color) {
     allToBlack();
     return true;
   } else {
-    allToColor(CRGB::Green);
     return false;
   }
 }

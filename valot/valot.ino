@@ -49,8 +49,8 @@ static uint16_t dist;         // A random number for our noise generator.
 uint16_t scale = 10;          // Wouldn't recommend changing this on the fly, or the animation will be really blocky. ORIGINAALI 30
 uint8_t maxChanges = 3;      // Value for blending between palettes. ORIGINAALI 15
 
-CRGBPalette16 currentPalette(OceanColors_p);
-CRGBPalette16 targetPalette(OceanColors_p);
+CRGBPalette16 currentPalette(CRGB::Black);
+CRGBPalette16 targetPalette(ForestColors_p);
 
 uint8_t modeSelect = 0;
 const byte interruptPin = 2; // CHANGE to interruptable pin
@@ -87,7 +87,7 @@ void loop() {
   switch(modeSelect) {
     case 0:   
       if(!maybeFlashColor(currentTime, CRGB::Red)){
-        fadingPalette();  
+        fadingPalette(currentTime);  
       }
       break;
     case 1:
@@ -100,10 +100,17 @@ void loop() {
         rainbowPulse(currentTime);
       }
       break;
+    /*case 3:
+      if(!maybeFlashCOlor(currentTime, CRGB::Green)){
+        stayingPalette(currentTime, CRGBPalette16::ForestColors_p);
+      }*/
   }
 } // loop()
 
-void fadingPalette() {
+unsigned long previousReset = 0;
+unsigned long RESET_TIMER = 900000; // 900000ms = 15min
+
+void fadingPalette(unsigned long curr) {
 //New loop for mode 1
   EVERY_N_MILLISECONDS(20) {
     nblendPaletteTowardPalette(currentPalette, targetPalette, maxChanges);  // Blend towards the target palette
@@ -111,11 +118,31 @@ void fadingPalette() {
   }
 
   EVERY_N_SECONDS(2) {             // Change the target palette to a random one every XX seconds.
-    targetPalette = CRGBPalette16(CHSV(random8(), 255, random8(128,255)), CHSV(random8(), 255, random8(128,255)), CHSV(random8(), 192, random8(128,255)), CHSV(random8(), 255, random8(128,255)));
+    if(curr - previousReset > RESET_TIMER){
+      targetPalette = CRGBPalette16(CRGB::Black);
+    }else{
+      targetPalette = CRGBPalette16(CHSV(random8(), 255, random8(128,255)), CHSV(random8(), 255, random8(128,255)), CHSV(random8(), 192, random8(128,255)), CHSV(random8(), 255, random8(128,255)));
+    }
   }
+
   LEDS.show();
   // Display the LED's at every loop cycle.
 }
+
+/*void stayingPalette(unsigned long curr, CRGBPalette16::palette) {
+
+  EVERY_N_MILLISECONDS(20) {
+    nblendPaletteTowardPalette(currentPalette, palette, maxChanges);  // Blend towards the target palette
+    fillnoise8();                                                           // Update the LED array with noise at the new location
+  }
+
+  EVERY_N_SECONDS(10) {             // Change the target palette to a random one every XX seconds.
+    targetPalette = CRGBPalette16(CRGB::Black);
+  }
+
+  LEDS.show();
+  // Display the LED's at every loop cycle.
+}*/
 
 unsigned long previousSingleColorPulse = 0;
 int PULSE_START_INDEX = 0;

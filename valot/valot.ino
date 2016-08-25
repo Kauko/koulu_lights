@@ -47,7 +47,7 @@ struct CRGB leds[NUM_LEDS];
 
 static uint16_t dist;         // A random number for our noise generator.
 uint16_t scale = 10;          // Wouldn't recommend changing this on the fly, or the animation will be really blocky. ORIGINAALI 30
-uint8_t maxChanges = 3;      // Value for blending between palettes. ORIGINAALI 15
+uint8_t maxChanges = 2;      // Value for blending between palettes. ORIGINAALI 15
 
 CRGBPalette16 currentPalette(CRGB::Black);
 CRGBPalette16 targetPalette(ForestColors_p);
@@ -92,18 +92,14 @@ void loop() {
       break;
     case 1:
       if(!maybeFlashColor(currentTime, CRGB::Yellow)){
-        singleColorPulse(currentTime);
-      }
-      break;
-    case 2:
-      if(!maybeFlashColor(currentTime, CRGB::Purple)){
         doublePulse(currentTime);
       }
       break;
-    /*case 3:
-      if(!maybeFlashCOlor(currentTime, CRGB::Green)){
-        stayingPalette(currentTime, CRGBPalette16::ForestColors_p);
-      }*/
+    /*case 2:
+      if(!maybeFlashColor(currentTime, CRGB::Purple)){
+        singleColorPulse(currentTime);
+      }
+      break;*/
   }
 } // loop()
 
@@ -129,21 +125,6 @@ void fadingPalette(unsigned long curr) {
   LEDS.show();
   // Display the LED's at every loop cycle.
 }
-
-/*void stayingPalette(unsigned long curr, CRGBPalette16::palette) {
-
-  EVERY_N_MILLISECONDS(20) {
-    nblendPaletteTowardPalette(currentPalette, palette, maxChanges);  // Blend towards the target palette
-    fillnoise8();                                                           // Update the LED array with noise at the new location
-  }
-
-  EVERY_N_SECONDS(10) {             // Change the target palette to a random one every XX seconds.
-    targetPalette = CRGBPalette16(CRGB::Black);
-  }
-
-  LEDS.show();
-  // Display the LED's at every loop cycle.
-}*/
 
 unsigned long previousSingleColorPulse = 0;
 int PULSE_START_INDEX = 0;
@@ -243,6 +224,7 @@ void rainbowPulse(unsigned long curr) {
 void doublePulse(unsigned long curr) {
  if(newDoublePulse){
   previousRainbowIndex = NUM_LEDS / 2;
+  previousSingleColorIndex = PULSE_START_INDEX;
   newDoublePulse = false;
  }
  rainbowPulse(curr);

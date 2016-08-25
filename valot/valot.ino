@@ -52,7 +52,7 @@ uint8_t maxChanges = 2;      // Value for blending between palettes. ORIGINAALI 
 CRGBPalette16 currentPalette(CRGB::Black);
 CRGBPalette16 targetPalette(ForestColors_p);
 
-uint8_t modeSelect = 0;
+uint8_t modeSelect = 1;
 const byte interruptPin = 2; // CHANGE to interruptable pin
 
 unsigned long modeChangeTime = 0;
@@ -132,8 +132,12 @@ int previousSingleColorIndex = PULSE_START_INDEX;
 int singleColorPulseSaturation = 240;
 int singleColorPulseHue = 240;  
 
+long getUpdateDelay() {
+  return random16(0, 50);
+}
+
 void singleColorPulse(unsigned long curr) {
-  long UPDATE_DELAY = random8(20, 150);
+  long UPDATE_DELAY = getUpdateDelay();
 
   if (PULSE_START_INDEX == previousSingleColorIndex) {
     singleColorPulseHue = random8(255);
@@ -181,7 +185,7 @@ int rainbowPulseHue = 140;
 
 
 void rainbowPulse(unsigned long curr) {
-  long UPDATE_DELAY = random8(20, 150);
+  long UPDATE_DELAY = getUpdateDelay();
 
   if (PULSE_START_INDEX == previousRainbowIndex) {
     rainbowPulseHue = random8(255);
